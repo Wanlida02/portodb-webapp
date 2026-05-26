@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="PortoDB" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0c6970" />
+
+  <title>PortoDB WebApp · iOS Ready</title>
+
+  <!-- Iconos para iOS (usa emojis como fallback) -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230c6970'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>📊</text></svg>" />
+
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@500,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+  <style>
+    :root,[data-theme="light"]{--bg:#f5f2ed;--surface:#fffdf9;--surface-2:#f0ebe4;--line:#d7d0c7;--text:#201d18;--muted:#716b62;--primary:#0c6970;--primary-soft:#d9e8e5;--success:#3f7a22;--danger:#8b3d2a;--radius-xl:28px;--radius-lg:22px;--radius-md:18px;--shadow:0 8px 24px rgba(19,16,12,.07);--font-body:'Satoshi',-apple-system,BlinkMacSystemFont,sans-serif;--font-display:'Cabinet Grotesk',-apple-system,BlinkMacSystemFont,sans-serif}
+    [data-theme="dark"]{--bg:#131210;--surface:#1c1a17;--surface-2:#27231f;--line:#39352f;--text:#efe8de;--muted:#aca397;--primary:#65aab0;--primary-soft:#223638;--success:#7db058;--danger:#d08a72;--shadow:0 12px 28px rgba(0,0,0,.35)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent} 
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow-x:hidden;-webkit-font-smoothing:antialiased} 
+    body{min-height:100vh;touch-action:pan-y}
+    .app{max-width:1180px;margin:0 auto;padding:16px;display:grid;gap:14px}
+    .topbar,.hero,.panel,.search,.sidebar,.content,.sheet,.tablecard,.dropzone,.segmented,.tabbar,.statusbox,.searchbox{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+    .topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:18px;font-size:13px;color:var(--muted)}
+    .hero{border-radius:28px;padding:20px;display:grid;gap:14px}.hero h1{font:700 clamp(1.5rem,1.2rem + 2vw,2.5rem)/1.1 var(--font-display);margin:0 0 10px}.hero p{margin:0;color:var(--muted);line-height:1.45;font-size:14px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .btn{appearance:none;border:none;border-radius:999px;padding:12px 16px;font-weight:700;background:var(--surface-2);color:var(--text);cursor:pointer;min-height:48px;font-size:15px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+    .btn:active{opacity:0.7;transform:scale(0.98)}
+    .btn.primary{background:var(--primary);color:#fff}.btn.ghost{border:1px solid var(--line)}
+    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.panel{padding:14px;border-radius:20px}.panel .k{font-size:12px;color:var(--muted);margin-bottom:6px}.panel .v{font:700 24px/1 var(--font-display)}
+    .dropzone{border-radius:24px;padding:18px;display:grid;gap:12px;background:linear-gradient(180deg,var(--surface),var(--surface-2))}.dropzone.drag{outline:2px solid var(--primary)} .dropzone input{display:none}
+    .title{font-weight:700}.sub,.small{font-size:13px;color:var(--muted)} 
+    .pill{display:inline-flex;align-items:center;gap:8px;background:var(--primary-soft);color:var(--primary);padding:8px 10px;border-radius:999px;font-size:12px;font-weight:700}
+    .workspace{display:grid;gap:14px}
+    .sidebar,.content{border-radius:26px;padding:14px;min-height:300px}
+    .search{padding:12px 14px;border-radius:16px;margin-bottom:12px}
+    .search input{width:100%;border:none;background:transparent;outline:none;color:var(--text);font-size:16px}
+    .searchbox{padding:16px;border-radius:20px;margin-bottom:14px}
+    .search-fields{display:grid;gap:10px;margin-bottom:12px}
+    .search-field{display:grid;gap:6px}
+    .search-field label{font-size:12px;font-weight:700;color:var(--muted)}
+    .search-field input{padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--text);outline:none;font-size:16px}
+    .search-field input:focus{outline:2px solid var(--primary)}
+    .filter-toggle{display:flex;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line);margin-top:8px}
+    .checkbox{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;-webkit-user-select:none}
+    .checkbox input{width:22px;height:22px;cursor:pointer}
+    .segmented,.tabbar{display:grid;gap:6px;padding:6px;border-radius:18px}
+    .segmented{grid-template-columns:repeat(3,1fr);margin-bottom:12px}
+    .tabbar{grid-template-columns:repeat(2,1fr)}
+    .segmented button,.tabbar button{appearance:none;border:none;background:transparent;color:var(--muted);padding:12px;border-radius:14px;font-weight:700;cursor:pointer;min-height:48px;touch-action:manipulation;user-select:none;-webkit-user-select:none;font-size:14px}
+    .segmented button:active,.tabbar button:active{opacity:0.7}
+    .segmented button.active,.tabbar button.active{background:var(--primary-soft);color:var(--primary)}
+    .list{display:grid;gap:10px;max-height:50vh;overflow:auto;-webkit-overflow-scrolling:touch}
+    .record{background:var(--surface-2);border:1px solid var(--line);border-radius:18px;padding:13px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+    .record:active{opacity:0.7}
+    .record.active{outline:2px solid var(--primary);background:var(--surface)}
+    .content-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+    .sheet{border-radius:24px;padding:16px}
+    .sheet h2{font:700 20px/1.2 var(--font-display);margin:0 0 6px}
+    .badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+    .badge{font-size:12px;padding:8px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-weight:700}
+    .kv{padding:10px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:120px 1fr;gap:8px;font-size:14px}
+    .kv b{color:var(--muted);font-weight:500}
+    .tablecard{margin-top:12px;border-radius:20px;padding:10px;overflow:auto;-webkit-overflow-scrolling:touch} 
+    table{width:100%;border-collapse:collapse;font-size:13px} 
+    th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top;white-space:nowrap} 
+    th{position:sticky;top:0;background:var(--surface);color:var(--muted);z-index:1}
+    .statusbox{padding:12px 14px;border-radius:16px}
+    .ok{color:var(--success)}.warn{color:var(--danger)} 
+    .empty{padding:24px;text-align:center;color:var(--muted)} 
+    mark{background:#ffe38d;color:#000;padding:0 2px;border-radius:4px}
+    .folders{display:grid;gap:8px;margin-bottom:12px}
+    .folder{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--surface-2);cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+    .folder:active{opacity:0.7}
+    .folder.active{outline:2px solid var(--primary);background:var(--surface)}
+    .config-section{margin-top:14px;padding:14px;background:var(--surface-2);border-radius:16px}
+    .config-title{font-weight:700;margin-bottom:8px}
+    .ios-install{background:var(--primary-soft);border:1px solid var(--primary);border-radius:20px;padding:16px;margin-bottom:14px}
+    .ios-install .title{color:var(--primary);margin-bottom:8px}
+    .ios-install ol{margin:8px 0;padding-left:20px;font-size:14px;line-height:1.6}
+    .ios-install li{margin:4px 0}
+    @media (min-width:768px){
+      .workspace{grid-template-columns:330px 1fr}
+      .stats{grid-template-columns:repeat(4,1fr)}
+      .tabbar{grid-template-columns:repeat(4,1fr)}
+      .search-fields{grid-template-columns:repeat(3,1fr)}
+      .hero{grid-template-columns:1.25fr .95fr}
+    }
+    @media (max-width:767px){
+      .app{padding:12px}
+      .hero{padding:16px}
+      .kv{grid-template-columns:100px 1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar"><span>📊 PortoDB · iOS Ready</span><button class="btn" id="themeBtn" style="padding:8px 12px;min-height:36px">☾</button></div>
+
+  <!-- Instrucciones iOS (solo visible en móvil sin PWA instalada) -->
+  <div class="ios-install" id="iosInstall" style="display:none">
+    <div class="title">📱 Instalar en iPhone/iPad</div>
+    <div class="small">Para usarlo como app nativa:</div>
+    <ol>
+      <li>Toca el botón <strong>Compartir</strong> (□↑) en Safari</li>
+      <li>Selecciona <strong>"Añadir a pantalla de inicio"</strong></li>
+      <li>Confirma y la app aparecerá en tu home screen</li>
+    </ol>
+    <button class="btn ghost" id="closeInstall" style="width:100%;margin-top:8px">Entendido</button>
+  </div>
+
+  <section class="hero">
+    <div>
+      <div class="pill">Optimizado para iOS</div>
+      <h1>PortoDB WebApp</h1>
+      <p>Búsqueda avanzada por operador, código ICAO/OACI y filtros personalizables. Funciona offline en iPhone y iPad.</p>
+      <div class="actions">
+        <label class="btn primary" for="dbFile">📂 Seleccionar .db</label>
+        <button class="btn ghost" id="clearBtn">🔄 Limpiar</button>
+        <button class="btn ghost" id="configBtn">⚙️ Configurar</button>
+      </div>
+    </div>
+    <div class="dropzone" id="dropzone">
+      <div class="title">Estado de carga</div>
+      <div class="statusbox"><div class="title" id="fileName">Sin archivo cargado</div><div class="small" id="fileMeta">Esperando base de datos SQLite / PortoDB.</div></div>
+      <input id="dbFile" type="file" accept=".db,.sqlite,.sqlite3,.db3,application/octet-stream" />
+    </div>
+  </section>
+
+  <section class="stats" id="stats"></section>
+
+  <!-- Panel de configuración -->
+  <div id="configPanel" style="display:none">
+    <div class="searchbox">
+      <div class="config-title">⚙️ Configuración de Búsqueda</div>
+      <div class="small" style="margin-bottom:12px">Personaliza las carpetas excluidas y los mapeos de columnas</div>
+
+      <div class="config-section">
+        <div class="config-title">Carpetas excluidas por defecto</div>
+        <textarea id="excludedFoldersConfig" rows="3" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--text);font-family:monospace;font-size:14px">TEL AESA, PDF NCC, PDF Parte II, PDF SACA, PDF SAFA, FR SANA, FR SAFA</textarea>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">Mapeo de columnas - Operador</div>
+        <textarea id="operatorMappingConfig" rows="5" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--text);font-family:monospace;font-size:14px">OBJ SAFA 2026 LAYER 2 = OPERATOR LAYER 2
+OBJ SANA 2026 = OPERADOR
+SAFAS 2026 = Operador
+SANAS 2026 = Operador
+OBJ SAFA 2026 LAYER 1 = Operator Layer 1</textarea>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">Mapeo de columnas - ICAO/OACI</div>
+        <textarea id="icaoMappingConfig" rows="4" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--text);font-family:monospace;font-size:14px">OBJ SAFA 2026 LAYER 2 = ICAO CODE
+OBJ SANA 2026 = OACI
+OBJ SAFA 2026 LAYER 1 = ICAO Code</textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="saveConfig">💾 Guardar</button>
+        <button class="btn ghost" id="closeConfig">✕ Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="workspace">
+    <aside class="sidebar">
+      <div class="search"><input id="searchInput" placeholder="Buscar tabla o campo"></div>
+      <div class="segmented">
+        <button class="active" id="srcFriendly">PortoDB</button>
+        <button id="srcRaw">Raw</button>
+        <button id="srcMeta">Meta</button>
+      </div>
+      <div class="list" id="list"><div class="empty">Carga un .db para empezar</div></div>
+    </aside>
+    <section class="content">
+      <div class="searchbox">
+        <div class="title" style="margin-bottom:12px">🔍 Búsqueda en registros</div>
+        <div class="search-fields">
+          <div class="search-field">
+            <label>General</label>
+            <input id="recordSearchGeneral" placeholder="Buscar en todos los campos">
+          </div>
+          <div class="search-field">
+            <label>Operador</label>
+            <input id="recordSearchOperator" placeholder="Buscar por operador">
+          </div>
+          <div class="search-field">
+            <label>ICAO/OACI</label>
+            <input id="recordSearchICAO" placeholder="Buscar por código">
+          </div>
+        </div>
+        <div class="filter-toggle">
+          <label class="checkbox">
+            <input type="checkbox" id="includeExcludedFolders">
+            <span class="small">Incluir carpetas excluidas</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="content-top">
+        <div><div class="title" id="contentTitle">Detalle</div><div class="sub" id="contentSub">Sin base cargada</div></div>
+        <div class="tabbar">
+          <button class="active" id="viewOverview">📋 Resumen</button>
+          <button id="viewData">📊 Registros</button>
+          <button id="viewSchema">🗂️ Esquema</button>
+          <button id="viewSQL">💻 SQL</button>
+        </div>
+      </div>
+      <div id="foldersWrap"></div>
+      <div class="sheet" id="detail"><div class="empty">Selecciona una tabla</div></div>
+    </section>
+  </main>
+</div>
+<script>
+let CONFIG = {
+  excludedFolders: ['TEL AESA', 'PDF NCC', 'PDF Parte II', 'PDF SACA', 'PDF SAFA', 'FR SANA', 'FR SAFA'],
+  operatorMapping: {
+    'OBJ SAFA 2026 LAYER 2': 'OPERATOR LAYER 2',
+    'OBJ SANA 2026': 'OPERADOR',
+    'SAFAS 2026': 'Operador',
+    'SANAS 2026': 'Operador',
+    'OBJ SAFA 2026 LAYER 1': 'Operator Layer 1'
+  },
+  icaoMapping: {
+    'OBJ SAFA 2026 LAYER 2': 'ICAO CODE',
+    'OBJ SANA 2026': 'OACI',
+    'OBJ SAFA 2026 LAYER 1': 'ICAO Code'
+  }
+};
+
+function loadConfig() {
+  const saved = localStorage.getItem('portodb_config');
+  if (saved) {
+    try { CONFIG = JSON.parse(saved); } catch (e) {}
+  }
+  updateConfigUI();
+}
+
+function saveConfig() {
+  localStorage.setItem('portodb_config', JSON.stringify(CONFIG));
+}
+
+function updateConfigUI() {
+  $('#excludedFoldersConfig').value = CONFIG.excludedFolders.join(', ');
+  $('#operatorMappingConfig').value = Object.entries(CONFIG.operatorMapping).map(([k,v]) => `${k} = ${v}`).join('\n');
+  $('#icaoMappingConfig').value = Object.entries(CONFIG.icaoMapping).map(([k,v]) => `${k} = ${v}`).join('\n');
+}
+
+function parseConfigFromUI() {
+  CONFIG.excludedFolders = $('#excludedFoldersConfig').value.split(',').map(s => s.trim()).filter(Boolean);
+  CONFIG.operatorMapping = {};
+  $('#operatorMappingConfig').value.split('\n').forEach(line => {
+    const match = line.match(/^(.+?)\s*=\s*(.+)$/);
+    if (match) CONFIG.operatorMapping[match[1].trim()] = match[2].trim();
+  });
+  CONFIG.icaoMapping = {};
+  $('#icaoMappingConfig').value.split('\n').forEach(line => {
+    const match = line.match(/^(.+?)\s*=\s*(.+)$/);
+    if (match) CONFIG.icaoMapping[match[1].trim()] = match[2].trim();
+  });
+  saveConfig();
+}
+
+let SQL=null, db=null, model=null, current=null, source='friendly', view='overview';
+let searchGeneral='', searchOperator='', searchICAO='';
+let includeExcluded=false;
+let folderFilter=''; let folderMatches=[];
+const $=s=>document.querySelector(s);
+
+init();
+
+async function init(){
+  loadConfig();
+  detectIOS();
+  bindUI();
+  try{
+    if(!window.initSqlJs) throw new Error('sql.js no cargado');
+    SQL = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}` });
+    $('#fileMeta').textContent='Motor SQLite listo. Ya puedes cargar un .db.';
+  }catch(err){
+    console.error(err);
+    $('#fileMeta').innerHTML='No se pudo inicializar SQLite. Recarga la página con conexión estable.';
+  }
+}
+
+function detectIOS(){
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  if(isIOS && !isStandalone){
+    $('#iosInstall').style.display='block';
+  }
+}
+
+function bindUI(){
+  $('#themeBtn').onclick=()=>{
+    document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'; 
+    $('#themeBtn').textContent=document.documentElement.dataset.theme==='dark'?'☀':'☾';
+  };
+  $('#dbFile').addEventListener('change', e=>{const f=e.target.files[0]; if(f) loadDb(f);});
+  $('#clearBtn').onclick=()=>location.reload();
+  $('#closeInstall').onclick=()=>$('#iosInstall').style.display='none';
+
+  $('#configBtn').onclick=()=>$('#configPanel').style.display='block';
+  $('#closeConfig').onclick=()=>$('#configPanel').style.display='none';
+  $('#saveConfig').onclick=()=>{parseConfigFromUI(); $('#configPanel').style.display='none'; alert('✓ Configuración guardada');};
+
+  $('#searchInput').addEventListener('input', ()=>{ folderFilter=''; renderList(); });
+  $('#recordSearchGeneral').addEventListener('input', ()=>{searchGeneral=$('#recordSearchGeneral').value.trim().toLowerCase(); if(model) searchRecords();});
+  $('#recordSearchOperator').addEventListener('input', ()=>{searchOperator=$('#recordSearchOperator').value.trim().toLowerCase(); if(model) searchRecords();});
+  $('#recordSearchICAO').addEventListener('input', ()=>{searchICAO=$('#recordSearchICAO').value.trim().toLowerCase(); if(model) searchRecords();});
+  $('#includeExcludedFolders').addEventListener('change', ()=>{includeExcluded=$('#includeExcludedFolders').checked; if(model) searchRecords();});
+
+  $('#srcFriendly').onclick=()=>setSource('friendly'); 
+  $('#srcRaw').onclick=()=>setSource('raw'); 
+  $('#srcMeta').onclick=()=>setSource('meta');
+  $('#viewOverview').onclick=()=>setView('overview'); 
+  $('#viewData').onclick=()=>setView('data'); 
+  $('#viewSchema').onclick=()=>setView('schema'); 
+  $('#viewSQL').onclick=()=>setView('sql');
+
+  const dz=$('#dropzone');
+  ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.add('drag');}));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{e.preventDefault(); dz.classList.remove('drag');}));
+  dz.addEventListener('drop', e=>{const f=e.dataTransfer.files[0]; if(f) loadDb(f);});
+}
+
+function setSource(s){
+  source=s; 
+  document.querySelectorAll('.segmented button').forEach(b=>b.classList.remove('active')); 
+  $(s==='friendly'?'#srcFriendly':s==='raw'?'#srcRaw':'#srcMeta').classList.add('active'); 
+  current=null; 
+  renderList();
+}
+
+function setView(v){
+  view=v; 
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('active')); 
+  $(v==='overview'?'#viewOverview':v==='data'?'#viewData':v==='schema'?'#viewSchema':'#viewSQL').classList.add('active'); 
+  renderDetail();
+}
+
+async function loadDb(file){
+  try{
+    if(!SQL) throw new Error('Motor SQLite no inicializado');
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    db=new SQL.Database(bytes);
+    model=buildModel();
+    current=null; folderFilter='';
+    searchGeneral=''; searchOperator=''; searchICAO='';
+    $('#recordSearchGeneral').value=''; $('#recordSearchOperator').value=''; $('#recordSearchICAO').value='';
+    $('#fileName').textContent=file.name;
+    $('#fileMeta').textContent=`${(file.size/1024/1024).toFixed(2)} MB · ${model.summary.physical_count} tablas`;
+    updateStats();
+    setSource(model.entities.length?'friendly':'raw');
+    renderList();
+    searchRecords();
+  }catch(err){
+    console.error(err);
+    $('#detail').innerHTML=`<div class="empty">No se pudo abrir el .db</div>`;
+  }
+}
+
+function exec(sql){ try{return db.exec(sql);}catch(e){return [];} }
+function rows(sql){ const res=exec(sql); if(!res.length) return []; const {columns,values}=res[0]; return values.map(v=>Object.fromEntries(columns.map((c,i)=>[c,v[i]]))); }
+function escIdent(name){ return '"'+String(name).replace(/"/g,'""')+'"'; }
+
+function buildModel(){
+  const tables=rows("SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
+  const names=tables.map(t=>t.name);
+  const metaTables=names.includes('tables_metadata')?rows('SELECT * FROM tables_metadata'):[];
+  const metaColumns=names.includes('columns_metadata')?rows('SELECT * FROM columns_metadata'):[];
+  const metaBy={}; 
+  metaColumns.forEach(c=>{ if(!metaBy[c.table_id]) metaBy[c.table_id]=[]; metaBy[c.table_id].push(c); }); 
+  Object.values(metaBy).forEach(a=>a.sort((x,y)=>(x.pos??1e9)-(y.pos??1e9)||(x.column_id??0)-(y.column_id??0)));
+  const physicalMap={}; 
+  names.forEach(n=>{ const m=n.match(/^[to](\d+)$/i); if(m) physicalMap[Number(m[1])]=n; });
+  const entities=metaTables.map(tm=>{
+    const phys=physicalMap[tm.table_id]||null; 
+    const schema=phys?rows(`PRAGMA table_info(${escIdent(phys)})`):[]; 
+    const row_count=phys?(rows(`SELECT COUNT(*) c FROM ${escIdent(phys)}`)[0]?.c||0):0; 
+    const samples=phys?rows(`SELECT * FROM ${escIdent(phys)} LIMIT 1000`):[]; 
+    const sql=phys?(tables.find(t=>t.name===phys)?.sql||''):'';
+    let mapped=samples; 
+    const friendly=metaBy[tm.table_id]||[];
+    if(samples.length && friendly.length){ 
+      const pcols=schema.map(c=>c.name).filter(n=>n!=='id'); 
+      mapped=samples.map(r=>{ 
+        const o={id:r.id}; 
+        pcols.forEach((pc,i)=>o[(friendly[i]?.name)||pc]=r[pc]); 
+        return o; 
+      }); 
+    }
+    return {table_id:tm.table_id,friendly_name:tm.name,physical_name:phys,version:tm.ver,options:tm.options,columns:friendly,schema,row_count,samples:mapped,sql};
+  });
+  const used=new Set(Object.values(physicalMap));
+  const extras=tables.filter(t=>!['tables_metadata','columns_metadata','views_metadata','fields_metadata','android_metadata'].includes(t.name) && !used.has(t.name)).map(t=>({friendly_name:t.name,physical_name:t.name,columns:[],schema:rows(`PRAGMA table_info(${escIdent(t.name)})`),row_count:(rows(`SELECT COUNT(*) c FROM ${escIdent(t.name)}`)[0]?.c||0),samples:rows(`SELECT * FROM ${escIdent(t.name)} LIMIT 1000`),sql:t.sql||''}));
+  const metaEntries=['tables_metadata','columns_metadata','views_metadata','fields_metadata'].filter(n=>names.includes(n)).map(n=>({friendly_name:n,physical_name:n,columns:[],schema:rows(`PRAGMA table_info(${escIdent(n)})`),row_count:(rows(`SELECT COUNT(*) c FROM ${escIdent(n)}`)[0]?.c||0),samples:rows(`SELECT * FROM ${escIdent(n)} LIMIT 1000`),sql:tables.find(t=>t.name===n)?.sql||''}));
+  return {summary:{metadata_tables:metaTables.length,metadata_columns:metaColumns.length,entity_count:entities.length,physical_count:tables.length},entities,extras,metaEntries};
+}
+
+function updateStats(){ 
+  const s=model.summary; 
+  $('#stats').innerHTML=[['Tablas UI',s.metadata_tables],['Campos UI',s.metadata_columns],['Entidades',s.entity_count],['Físicas',s.physical_count]].map(([k,v])=>`<div class="panel"><div class="k">${k}</div><div class="v">${v}</div></div>`).join(''); 
+}
+
+function getDataset(){ 
+  if(!model) return []; 
+  if(source==='friendly') return model.entities; 
+  if(source==='meta') return model.metaEntries; 
+  return model.extras; 
+}
+
+function renderList(){ 
+  const q=$('#searchInput').value.trim().toLowerCase(); 
+  const items=getDataset().filter(item=>[item.friendly_name,item.physical_name,...(item.columns||[]).map(c=>c.name),...(item.schema||[]).map(c=>c.name)].join(' ').toLowerCase().includes(q)).sort((a,b)=>(b.row_count||0)-(a.row_count||0)); 
+  $('#list').innerHTML=items.length?items.map((item,idx)=>`<article class="record" data-i="${idx}"><div class="title">${item.friendly_name||item.physical_name}</div><div class="sub">${item.physical_name&&item.physical_name!==item.friendly_name?item.physical_name+' · ':''}${(item.columns||[]).length||(item.schema||[]).length} cols · ${item.row_count||0} filas</div></article>`).join(''):'<div class="empty">Sin resultados</div>'; 
+  document.querySelectorAll('.record[data-i]').forEach((el,idx)=>el.onclick=()=>{ 
+    current=items[idx]; 
+    document.querySelectorAll('.record').forEach(n=>n.classList.remove('active')); 
+    el.classList.add('active'); 
+    renderDetail();
+  }); 
+  if(items[0]){ 
+    current=items[0]; 
+    document.querySelector('.record[data-i]')?.classList.add('active'); 
+    renderDetail(); 
+  } 
+}
+
+function getVisibleColumns(item){ 
+  return (item.columns&&item.columns.length)?item.columns.map(c=>c.name):(item.schema||[]).map(c=>c.name); 
+}
+
+function searchRecords(){
+  if(!model){ renderFolders(); return; }
+  const hasQuery = searchGeneral || searchOperator || searchICAO;
+  if(!hasQuery) { folderMatches=[]; renderFolders(); renderDetail(); return; }
+
+  const folders=[];
+  const entities=(source==='meta'?model.metaEntries:(source==='raw'?model.extras:model.entities));
+
+  entities.forEach(item=>{
+    const folderName = item.friendly_name||item.physical_name;
+    if(!includeExcluded && CONFIG.excludedFolders.includes(folderName)) return;
+
+    const visibleCols=getVisibleColumns(item);
+    const operatorCol = CONFIG.operatorMapping[folderName];
+    const icaoCol = CONFIG.icaoMapping[folderName];
+
+    const searchRows=(item.samples||[]).filter(r=>{
+      if(searchGeneral && visibleCols.some(col=>String(r[col] ?? '').toLowerCase().includes(searchGeneral))) return true;
+      if(searchOperator && operatorCol && String(r[operatorCol] ?? '').toLowerCase().includes(searchOperator)) return true;
+      if(searchICAO && icaoCol && String(r[icaoCol] ?? '').toLowerCase().includes(searchICAO)) return true;
+      return false;
+    });
+
+    if(searchRows.length){
+      folders.push({name:folderName, count:searchRows.length, item});
+    }
+  });
+
+  folderMatches=folders;
+  renderFolders();
+  renderDetail();
+}
+
+function renderFolders(){
+  const hasQuery = searchGeneral || searchOperator || searchICAO;
+  if(!hasQuery || !folderMatches || !folderMatches.length){ $('#foldersWrap').innerHTML=''; return; }
+  const html=`<div class="small" style="margin:2px 0 8px">📁 ${folderMatches.length} carpetas con resultados</div><div class="folders">${folderMatches.map(f=>`<div class="folder ${folderFilter===f.name?'active':''}" data-folder="${escAttr(f.name)}"><b>${escapeHtml(f.name)}</b><div class="small">${f.count} coincidencias</div></div>`).join('')}</div>`;
+  $('#foldersWrap').innerHTML=html;
+  document.querySelectorAll('.folder[data-folder]').forEach(el=>el.onclick=()=>{ 
+    folderFilter=el.getAttribute('data-folder'); 
+    current=(model.entities||model.extras||model.metaEntries).find(x=>(x.friendly_name||x.physical_name)===folderFilter) || current; 
+    document.querySelectorAll('.folder').forEach(n=>n.classList.remove('active')); 
+    el.classList.add('active'); 
+    renderDetail();
+  });
+}
+
+function filterRows(rowsIn,item){
+  const folderName = item.friendly_name||item.physical_name;
+  const visible=getVisibleColumns(item);
+  const operatorCol = CONFIG.operatorMapping[folderName];
+  const icaoCol = CONFIG.icaoMapping[folderName];
+  const hasQuery = searchGeneral || searchOperator || searchICAO;
+
+  if(!hasQuery) return rowsIn;
+
+  return rowsIn.filter(r=>{
+    if(searchGeneral && visible.some(c=>String(r[c] ?? '').toLowerCase().includes(searchGeneral))) return true;
+    if(searchOperator && operatorCol && String(r[operatorCol] ?? '').toLowerCase().includes(searchOperator)) return true;
+    if(searchICAO && icaoCol && String(r[icaoCol] ?? '').toLowerCase().includes(searchICAO)) return true;
+    return false;
+  });
+}
+
+function renderDetail(){
+  if(!current){ $('#detail').innerHTML='<div class="empty">Selecciona una tabla</div>'; return; }
+  $('#contentTitle').textContent=current.friendly_name||current.physical_name||'Detalle'; 
+  $('#contentSub').textContent=current.physical_name?`Tabla física: ${current.physical_name}`:'Sin correspondencia física';
+  const cols=(current.columns&&current.columns.length)?current.columns.map(c=>({name:c.name,type:c.type||'TEXT',pos:c.pos})):(current.schema||[]).map(c=>({name:c.name,type:c.type||'TEXT',pos:c.cid}));
+  const hasQuery = searchGeneral || searchOperator || searchICAO;
+  let html=`<h2>${escapeHtml(current.friendly_name||current.physical_name)}</h2><div class="small">${escapeHtml(current.physical_name||'Elemento lógico')}</div><div class="badges"><span class="badge">${current.row_count||0} filas</span><span class="badge">${cols.length} columnas</span>${hasQuery?`<span class="badge">Filtro activo</span>`:''}</div>`;
+
+  if(view==='overview'){ 
+    html+=kv('Versión', current.version ?? '—')+kv('Opciones', current.options ?? '—')+kv('Tabla física', current.physical_name ?? '—')+renderTable(cols.slice(0,80), ['name','type','pos'], {'name':'Campo','type':'Tipo','pos':'Pos'}); 
+  }
+  if(view==='data'){ 
+    const filtered=filterRows(current.samples||[], current); 
+    html+= filtered.length ? renderTable(filtered.slice(0,500), Object.keys(filtered[0]).slice(0,12), {}, searchGeneral||searchOperator||searchICAO) : '<div class="empty">No hay registros que coincidan</div>'; 
+  }
+  if(view==='schema'){ 
+    html+= current.schema?.length ? renderTable(current.schema.slice(0,100), ['cid','name','type','notnull','dflt_value','pk'], {'cid':'CID','name':'Campo','type':'Tipo','notnull':'NN','dflt_value':'Default','pk':'PK'}) : '<div class="empty">No hay esquema disponible</div>'; 
+  }
+  if(view==='sql'){ 
+    html+= `<div class="tablecard"><pre style="white-space:pre-wrap;word-break:break-word;margin:0;font:13px/1.45 ui-monospace,monospace">${escapeHtml(current.sql || 'SQL no disponible')}</pre></div>`; 
+  }
+  $('#detail').innerHTML=html;
+}
+
+function kv(k,v){ return `<div class="kv"><b>${escapeHtml(String(k))}</b><span>${escapeHtml(String(v))}</span></div>`; }
+function renderTable(rowsArr, cols, labels={}, needle=''){ return `<div class="tablecard"><table><thead><tr>${cols.map(c=>`<th>${labels[c]||c}</th>`).join('')}</tr></thead><tbody>${rowsArr.map(r=>`<tr>${cols.map(c=>`<td>${highlight(escapeHtml(String(r[c] ?? '')), needle)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escAttr(s){ return String(s).replace(/"/g,'&quot;'); }
+function highlight(text, needle){ if(!needle) return text; const safe=needle.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); return text.replace(new RegExp(safe,'ig'), m=>`<mark>${m}</mark>`); }
+</script>
+</body>
+</html>
